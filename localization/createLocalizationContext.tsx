@@ -13,7 +13,7 @@ const createLocalizationContext = <
   T extends LocalizationMessages,
   U extends string,
 >(
-  moduleMessages: Record<U, T> & Record<string, T>,
+  moduleMessages: Record<string, T>,
   languageFallback: U,
 ) => {
   const LocalizationContext = createContext<LocalizationContextType<T> | null>(
