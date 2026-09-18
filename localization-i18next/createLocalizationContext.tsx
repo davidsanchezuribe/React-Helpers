@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useContext, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 type LocalizationMessages = {
   [key: string]: string | LocalizationMessages;
@@ -7,6 +8,13 @@ type LocalizationMessages = {
 type LocalizationContextType<T extends LocalizationMessages> = {
   messages: T;
   lang: string;
+};
+
+type LocalizationProviderProps<T> = {
+  lang?: string;
+  customMessages?: T;
+  children: ReactNode;
+  geti18next?: boolean;
 };
 
 const createLocalizationContext = <T extends LocalizationMessages>(
@@ -21,15 +29,18 @@ const createLocalizationContext = <T extends LocalizationMessages>(
   const LocalizationContext = createContext<LocalizationContextType<T> | null>(
     null,
   );
-  const LocalizationProvider = ({
-    lang,
-    customMessages,
-    children,
-  }: {
-    lang: string;
-    customMessages?: T;
-    children: ReactNode;
-  }) => {
+  const LocalizationProvider = (props: LocalizationProviderProps<T>) => {
+    const { lang: langArg, customMessages, geti18next, children } = props;
+    const { i18n } = useTranslation()
+    const isI18nAvailable = Boolean(i18n && i18n.isInitialized);
+    if (geti18next && !isI18nAvailable) {
+      console.warn(
+        "geti18next is 'true' in LocalizationProvider but i18next is not defined or has not been initialized"
+      );
+    }
+    const useI18nSource = geti18next && isI18nAvailable;
+    const lang = useI18nSource ? i18n.language : langArg ? langArg : Object.keys(moduleMessages)[0]
+
     const value = useMemo(
       (): { messages: T; lang: string } => ({
         messages: customMessages
